@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 20px;
+          background-color: #f0f0f0;
+        }
+        h1 {
+          text-align: center;
+        }
+        .product-form, .product-dashboard, .cart, .total {
+          margin: 20px auto;
+          padding: 20px;
+          border: 2px solid black;
+          background-color: #fff;
+          max-width: 600px;
+        }
+        .product-form input, .product-form button {
+          margin: 5px;
+        }
+        .product-dashboard, .cart {
+          background-color: #ffffff;
+        }
+        .cart {
+          background-color: #fff8e1;
+        }
+        .product-item, .cart-item{
+          border: 1px solid #ddd;
+          margin-bottom: 10px;
+          padding: 10px;
+          display: flex;
+          align-items: center;
+        }
+        .product-item img, .cart-item img {
+          max-width: 100px;
+          margin-right: 20px;
+        }
+      
+      
+        .total {
+          font-size: 20px;
+          font-weight: bold;
+        }
+        .btn-remove {
+          background-color: #ff5c5c;
+          color: white;
+          border: none;
+          padding: 5px 10px;
+          cursor: pointer;
+        }
+      </style> 
+</head>
+<body>
+    <h1> Shopping Cart </h1>
+<!-- Product form---------------------------------------------------------------->
+ <div class="product-form">
+    <h2>Add Item for Selection</h2>
+    <input type="text" id="productName" placeholder="Product name">
+    <input type="number" id="productPrice" placeholder="Price">
+    <input type="text" id="productImage" placeholder="Image url">
+    <button onclick="creatProduct()">Create Product</button>
+</div>
+
+<!-- Product dashboard---------------------------------------------------------------->
+ <div class="product-dashboard">
+    <h2>Product Dashboard</h2>
+    <div id="productList"></div>
+ </div>
+
+ <!-- Product cart---------------------------------------------------------------->
+ <div class="cart">
+    <h2>Your cart</h2>
+    <div id="cartList"></div>
+    <button onclick="calculateTotal()">Calculate final price</button>
+    <div class="total" id="totalAmount">You have to pay: 0</div>
+ </div>
+  
+  <!-- Java script---------------------------------------------------------------->
+<script>
+    let products =[]; //array เก็บ product
+    let cart =[]; //array เก็บ cart
+
+    //ฟังชั่นสร้าง Product
+    function creatProduct() {
+        const name = document.getElementById("productName").value;
+        const price = document.getElementById("productPrice").value;
+        const image = document.getElementById("productImage").value;
+
+    //สร้างเงื่อนไข ถ้ากรอกข้อมูลไม่ครบ
+    if (name==='' || price==='' || image===''){
+        alert(กรุณากรอกข้อมูลให้ครบถ้วนและถูกต้อง);
+        return; //return ให้มันหยุดทำงาน
+    }
+
+    const product = {
+        id: Date.now(), //ID ไม่ซ้ำตามเวลา
+        name,
+        price,
+        image
+    }
+
+    products.push(product); //เพิ่มสินค้าใหม่ลงใน array
+    displayProducts(); //เปิดใช้งานฟังชั่น แสดงสินค้าใน dashboard
+
+    //clear ค่าที่พิมไว้ในช่อง input
+    document.getElementById("productName").value = '';
+    document.getElementById("productPrice").value = '';
+    document.getElementById("productImage").value = '';
+
+    }
+
+  // ฟังก์ชันแสดงสินค้าใน Product Dashboard -----------------------------------------------------
+  function displayProducts() {
+    const productList = document.getElementById("productList");
+    productList.innerHTML = ''; // เคลียร์ข้อมูลเดิม
+
+    products.forEach(product => {
+        const productItem = document.createElement('div');
+        productItem.classList.add('product-item');
+
+        productItem.innerHTML = `
+        <input type="checkbox" onchange="toggleProductInCart(${product.id})">
+        <img src="${product.image}" alt="${product.name}">
+        <div>
+          <h3>${product.name}</h3>
+          <p>${product.price}Baht</p>
+          <button class="btn-remove" onclick="removeProduct(${product.id})">Remove</button>
+        </div>
+      `;
+
+      productList.appendChild(productItem);
+    });
+  }
+
+ // ฟังก์ชันลบสินค้าจาก Product Dashboard
+ function removeProduct(productId) {
+    products = products.filter(product => product.id !== productId); // ลบสินค้าจาก Array products
+    cart = cart.filter(product => product.id !== productId); // ลบสินค้านี้จากตะกร้า (ถ้ามี)
+    displayProducts(); // อัปเดตหน้า Dashboard
+    displayCart(); // อัปเดตหน้า Cart
+  }
+
+  // ฟังก์ชันเลือก/ยกเลิกการเลือกสินค้า
+  function toggleProductInCart(productId) {
+    const product = products.find(p => p.id === productId);
+    
+    if (cart.includes(product)) {
+      cart = cart.filter(p => p.id !== productId); // ลบสินค้าออกจากตะกร้า
+    } else {
+      cart.push(product); // เพิ่มสินค้าในตะกร้า
+    }
+
+    displayCart(); // แสดงรายการในตะกร้า
+  }
+
+  // ฟังก์ชันแสดงสินค้าในตะกร้า
+  function displayCart() {
+    const cartList = document.getElementById("cartList");
+    cartList.innerHTML = ''; // เคลียร์ข้อมูลเดิม
+
+    cart.forEach(product => {
+      const cartItem = document.createElement('div');
+      cartItem.classList.add('cart-item');
+
+      cartItem.innerHTML = ` <img src="${product.image}" alt="${product.name}">
+        <div>
+          <h3>${product.name}</h3>
+          <p>${product.price}Baht</p>
+        </div>
+      `;
+
+      cartList.appendChild(cartItem);
+    });
+  }
+
+  // ฟังก์ชันคำนวณราคาสุดท้าย
+  function calculateTotal() {
+    const totalAmount = cart.reduce((total, product) => total + Number(product.price), 0); //ถ้าไม่แปลงเป็น numberก่อน มันจะมีเลข0นำหน้าราคารวม งง
+    document.getElementById("totalAmount").textContent = `You have to pay: ${totalAmount}Baht`;
+
+    
+  }
+  
+
+
+
+</script>
+</body>
+</html>
